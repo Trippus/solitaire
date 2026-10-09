@@ -1,0 +1,11 @@
+{
+  "name": "syvkabale",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Syvkabale (Klondike solitaire) as an installable iPhone web app",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "icons": "node tools/make-icons.mjs"
+  }
+}

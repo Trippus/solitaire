@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Syvkabale</title>
+  <meta name="description" content="Klassisk syvkabale (Klondike) til din telefon.">
+  <meta name="theme-color" content="#0b3a24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Syvkabale">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="felt"></div>
+
+  <div id="app">
+    <header class="hud">
+      <div class="stat"><span class="lbl">Point</span><span class="val" id="score">0</span></div>
+      <div class="stat"><span class="lbl">Tid</span><span class="val" id="time">0:00</span></div>
+      <div class="stat"><span class="lbl">Træk</span><span class="val" id="moves">0</span></div>
+    </header>
+
+    <main id="board" aria-label="Spillebord"></main>
+
+    <nav class="toolbar">
+      <button id="newBtn" type="button">
+        <svg viewBox="0 0 24 24"><rect x="5" y="3" width="11" height="15" rx="2"/><path d="M9 21h8a2 2 0 0 0 2-2V8"/><path d="M10.5 8v5M8 10.5h5"/></svg>
+        <span>Nyt spil</span>
+      </button>
+      <button id="undoBtn" type="button" disabled>
+        <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        <span>Fortryd</span>
+      </button>
+      <button id="hintBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg>
+        <span>Tip</span>
+      </button>
+      <button id="menuBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <span>Menu</span>
+      </button>
+    </nav>
+  </div>
+
+  <button id="autoBtn" type="button">Afslut automatisk <span aria-hidden="true">✦</span></button>
+
+  <div id="install">
+    <p>Installer Syvkabale: tryk på
+      <svg viewBox="0 0 24 24" aria-label="Del"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8"/></svg>
+      og vælg <b>Føj til hjemmeskærm</b>.</p>
+    <button type="button" aria-label="Luk">✕</button>
+  </div>
+
+  <div id="backdrop" class="backdrop"></div>
+
+  <section id="menu" class="sheet" aria-label="Menu">
+    <div class="grabber"></div>
+    <header class="sheet-head">
+      <h2>Syvkabale</h2>
+      <button id="menuClose" type="button" class="icon-btn" aria-label="Luk">✕</button>
+    </header>
+
+    <div class="group">
+      <div class="seg" id="drawSeg">
+        <button type="button" data-draw="1">Træk 1 kort</button>
+        <button type="button" data-draw="3">Træk 3 kort</button>
+      </div>
+      <div class="row">
+        <button type="button" class="primary" id="mNew">Nyt spil</button>
+        <button type="button" class="secondary" id="mRestart">Spil igen</button>
+      </div>
+    </div>
+
+    <h3>Statistik</h3>
+    <div class="stats" id="statsGrid"></div>
+
+    <h3>Indstillinger</h3>
+    <div class="group list">
+      <label class="toggle"><span>Lyd</span><input type="checkbox" id="optSound"><i></i></label>
+      <label class="toggle"><span>Læg automatisk op</span><input type="checkbox" id="optAuto"><i></i></label>
+      <label class="toggle"><span>Venstrehåndet</span><input type="checkbox" id="optLeft"><i></i></label>
+      <div class="pick"><span>Bord</span><div class="swatches" id="tableSw"></div></div>
+      <div class="pick"><span>Bagside</span><div class="swatches" id="backSw"></div></div>
+    </div>
+
+    <p class="foot">Spil nr. <span id="seedNo"></span> · <button type="button" class="link" id="mReset">Nulstil statistik</button></p>
+  </section>
+
+  <div id="confirmModal" class="modal">
+    <div class="panel">
+      <h3>Start et nyt spil?</h3>
+      <p>Det igangværende spil tæller som tabt.</p>
+      <div class="row">
+        <button type="button" class="secondary" data-act="cancel">Spil videre</button>
+        <button type="button" class="primary" data-act="ok">Nyt spil</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="fx"></canvas>
+
+  <div id="winModal" class="modal">
+    <div class="panel win">
+      <div class="crown" aria-hidden="true">
+        <svg viewBox="0 0 64 48"><path d="M6 40 2 12l16 12L32 4l14 20 16-12-4 28z"/><rect x="6" y="42" width="52" height="5" rx="2"/></svg>
+      </div>
+      <h2>Tillykke!</h2>
+      <p class="sub">Kabalen gik op</p>
+      <div class="stats three">
+        <div><b id="wScore">0</b><span>Point</span></div>
+        <div><b id="wTime">0:00</b><span>Tid</span></div>
+        <div><b id="wMoves">0</b><span>Træk</span></div>
+      </div>
+      <div id="wBadges" class="badges"></div>
+      <button type="button" class="primary wide" id="wNew">Nyt spil</button>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
