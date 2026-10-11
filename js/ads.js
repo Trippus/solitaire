@@ -7,7 +7,7 @@
 //  - at most one ad every 3 minutes; the first one at the earliest 3 minutes after launch
 
 const CONFIG = {
-  mode: 'placeholder', // 'off' | 'placeholder' | 'admob'
+  mode: 'off', // 'off' | 'placeholder' | 'admob'
   minGapMs: 3 * 60 * 1000,
   closeAfterSec: 5,
 };
