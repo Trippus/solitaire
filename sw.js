@@ -1,6 +1,6 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
 // Bump VERSION when shipping changes so old caches are dropped.
-const VERSION = 'syvkabale-v1';
+const VERSION = 'syvkabale-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS = [
   './js/suits.js',
   './js/audio.js',
   './js/fx.js',
+  './js/ads.js',
   './manifest.webmanifest',
   './icons/icon-180.png',
   './icons/icon-192.png',

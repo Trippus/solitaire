@@ -2,6 +2,7 @@ import * as G from './game.js';
 import { RANK_LABEL, svgSuit } from './suits.js';
 import { Sound } from './audio.js';
 import { celebrate } from './fx.js';
+import { Ads } from './ads.js';
 
 const $ = (s) => document.querySelector(s);
 const board = $('#board');
@@ -64,6 +65,13 @@ function save() {
 
 /* ---------- DOM ---------- */
 
+const cardClass = (suit, r) => `${G.isRed(suit) ? 'red' : 'black'}${r > 10 ? ' court' : ''}${r === 1 ? ' ace' : ''}`;
+
+function faceHtml(suit, r) {
+  const art = r > 10 ? `<span class="letter">${RANK_LABEL[r]}</span>` : svgSuit(suit, 'big');
+  return `<div class="face"><div class="corner"><span class="rk">${RANK_LABEL[r]}</span>${svgSuit(suit, 'sm')}</div>${art}</div>`;
+}
+
 function buildBoard() {
   for (const key of KEYS) {
     const s = document.createElement('div');
@@ -78,12 +86,9 @@ function buildBoard() {
   for (const suit of G.SUITS) {
     for (let r = 1; r <= 13; r++) {
       const el = document.createElement('div');
-      el.className = `card down ${G.isRed(suit) ? 'red' : 'black'}${r > 10 ? ' court' : ''}${r === 1 ? ' ace' : ''}`;
+      el.className = `card down ${cardClass(suit, r)}`;
       el.dataset.id = suit + r;
-      const art = r > 10 ? `<span class="letter">${RANK_LABEL[r]}</span>` : svgSuit(suit, 'big');
-      el.innerHTML =
-        `<div class="card-inner"><div class="face"><div class="corner"><span class="rk">${RANK_LABEL[r]}</span>` +
-        `${svgSuit(suit, 'sm')}</div>${art}</div><div class="back"></div></div>`;
+      el.innerHTML = `<div class="card-inner">${faceHtml(suit, r)}<div class="back"></div></div>`;
       board.appendChild(el);
       els.set(suit + r, el);
     }
@@ -325,6 +330,8 @@ function shake(ids) {
   });
 }
 
+const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0] % 1000000;
+
 function newGame(seed) {
   clearTimeout(autoTimer);
   clearHints();
@@ -334,7 +341,7 @@ function newGame(seed) {
     fx = null;
   }
   if (state && state.started && !state.won) stats.streak = 0;
-  state = G.deal(seed ?? crypto.getRandomValues(new Uint32Array(1))[0] % 1000000, settings.drawCount);
+  state = G.deal(seed ?? randomSeed(), settings.drawCount);
   history = [];
   skipAutoId = null;
 
@@ -637,11 +644,11 @@ function buildMenu() {
   });
   $('#mNew').addEventListener('click', () => {
     closeAll();
-    newGame();
+    nextGame();
   });
   $('#mRestart').addEventListener('click', () => {
     closeAll();
-    newGame(state.seed);
+    nextGame(state.seed);
   });
   $('#mReset').addEventListener('click', () => {
     Object.assign(stats, { played: 0, won: 0, streak: 0, bestStreak: 0, bestTime: 0, bestScore: 0 });
@@ -654,7 +661,67 @@ function buildMenu() {
 function requestNewGame() {
   if (busy) return;
   if (state.started && !state.won && state.moves > 0) openModal('#confirmModal');
-  else newGame();
+  else nextGame();
+}
+
+// Moving on from one game to the next is the natural break where an ad may show.
+let advancing = false;
+async function nextGame(seed) {
+  if (advancing) return;
+  advancing = true;
+  try {
+    if (state.started) await Ads.interstitial();
+    newGame(seed);
+  } finally {
+    advancing = false;
+  }
+}
+
+/* ---------- intro screen ---------- */
+
+const introOpen = () => $('#intro').classList.contains('open');
+
+function buildIntro() {
+  // Four sevens around the ace of spades — a nod to the name.
+  const fan = [['D', 7], ['C', 7], ['S', 1], ['H', 7], ['S', 7]];
+  $('#introCards').innerHTML = fan
+    .map(([s, r], i) => `<div class="icard ${cardClass(s, r)}" style="--i:${i - 2}">${faceHtml(s, r)}</div>`)
+    .join('');
+
+  $('#iDrawSeg').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    settings.drawCount = +b.dataset.draw;
+    syncIntro();
+    save();
+  });
+  $('#iContinue').addEventListener('click', () => closeIntro());
+  $('#iNew').addEventListener('click', () => closeIntro(true));
+  $('#iRules').addEventListener('click', () => {
+    const open = $('#introRules').hidden;
+    $('#introRules').hidden = !open;
+    $('#iRules').textContent = open ? 'Skjul reglerne' : 'Sådan spiller du';
+  });
+}
+
+function syncIntro() {
+  const resumable = state.started && !state.won && state.moves > 0;
+  $('#iContinue').hidden = !resumable;
+  $('#iNew').className = resumable ? 'secondary wide' : 'primary wide';
+  document.querySelectorAll('#iDrawSeg button').forEach((b) => b.classList.toggle('on', +b.dataset.draw === settings.drawCount));
+  $('#introStats').textContent = stats.played ? `Du har vundet ${stats.won} af ${stats.played} spil` : '';
+}
+
+function openIntro() {
+  syncIntro();
+  $('#intro').classList.add('open');
+}
+
+function closeIntro(fresh = false) {
+  $('#intro').classList.remove('open');
+  // The intro covers the launch, so no ad here — just deal.
+  if (fresh) setTimeout(() => newGame(), 250);
+  setTimeout(installHint, 900);
 }
 
 function installHint() {
@@ -699,16 +766,16 @@ function init() {
   $('#autoBtn').addEventListener('click', autoComplete);
   $('#backdrop').addEventListener('click', closeAll);
   $('#menuClose').addEventListener('click', closeAll);
-  $('#wNew').addEventListener('click', () => newGame());
+  $('#wNew').addEventListener('click', () => nextGame());
   $('#confirmModal').addEventListener('click', (e) => {
     const act = e.target.closest('button')?.dataset.act;
     if (!act) return;
     closeAll();
-    if (act === 'ok') newGame();
+    if (act === 'ok') nextGame();
   });
 
   window.addEventListener('keydown', (e) => {
-    if (document.querySelector('.sheet.open, .modal.open')) return;
+    if (document.querySelector('.sheet.open, .modal.open, .intro.open, .ad-layer.open')) return;
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') return undo();
     if (e.key === 'h') hint();
     else if (e.key === 'n') requestNewGame();
@@ -726,7 +793,8 @@ function init() {
   });
 
   setInterval(() => {
-    if (state && state.started && !state.won && !document.hidden && !document.querySelector('.sheet.open')) {
+    const paused = document.hidden || introOpen() || Ads.showing || document.querySelector('.sheet.open');
+    if (state && state.started && !state.won && !paused) {
       state.elapsed++;
       $('#time').textContent = fmtTime(state.elapsed);
     }
@@ -734,13 +802,12 @@ function init() {
   document.addEventListener('visibilitychange', () => document.hidden && save());
   window.addEventListener('pagehide', save);
 
-  if (state) {
-    renderInstant();
-    $('#seedNo').textContent = state.seed;
-  } else {
-    newGame();
-  }
-  installHint();
+  // Lay out the saved game (or a fresh, untouched deal) behind the intro screen.
+  if (!state) state = G.deal(randomSeed(), settings.drawCount);
+  renderInstant();
+  $('#seedNo').textContent = state.seed;
+  buildIntro();
+  openIntro();
 
   if ('serviceWorker' in navigator && !/^(localhost|127\.|\[::1\])/.test(location.hostname)) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

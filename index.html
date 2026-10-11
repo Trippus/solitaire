@@ -121,6 +121,49 @@
     </div>
   </div>
 
+  <section id="intro" class="intro" aria-label="Startskærm">
+    <div class="intro-inner">
+      <div class="intro-cards" id="introCards" aria-hidden="true"></div>
+      <h1>Syvkabale</h1>
+      <p class="tagline">Den klassiske kabale</p>
+
+      <div class="intro-actions">
+        <button type="button" class="primary wide" id="iContinue" hidden>Fortsæt spillet</button>
+        <div class="seg" id="iDrawSeg">
+          <button type="button" data-draw="1">Træk 1 kort</button>
+          <button type="button" data-draw="3">Træk 3 kort</button>
+        </div>
+        <button type="button" class="primary wide" id="iNew">Nyt spil</button>
+        <button type="button" class="link" id="iRules">Sådan spiller du</button>
+      </div>
+
+      <div class="intro-rules" id="introRules" hidden>
+        <ul>
+          <li>Målet er at bygge fire bunker øverst – én pr. kulør – fra <b>es</b> til <b>konge</b>.</li>
+          <li>På bordet lægges kortene i faldende rækkefølge med skiftevis <b>rød</b> og <b>sort</b>.</li>
+          <li>Kun en <b>konge</b> kan flyttes til en tom plads.</li>
+          <li>Tryk på bunken øverst til venstre for at vende nye kort.</li>
+          <li>Tryk på et kort for at flytte det til det bedste sted – eller træk det med fingeren.</li>
+        </ul>
+      </div>
+
+      <p class="intro-foot" id="introStats"></p>
+    </div>
+  </section>
+
+  <!-- Placeholder for a full-screen ad between games (AdMob interstitial later) -->
+  <div id="adInterstitial" class="ad-layer" role="dialog" aria-label="Reklame">
+    <div class="ad-top">
+      <span class="ad-tag">Reklame</span>
+      <button type="button" class="ad-close" aria-label="Luk reklamen" disabled><span class="ad-count">5</span></button>
+    </div>
+    <div class="ad-box">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg>
+      <b>Reklameplads</b>
+      <span>Her vises en fuldskærmsreklame (AdMob) mellem to spil – højst én hvert 3. minut.</span>
+    </div>
+  </div>
+
   <div id="toast" role="status"></div>
 
   <script type="module" src="js/app.js"></script>
