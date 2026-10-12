@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <title>Feature graphic</title>
+  <!-- Google Play "feature graphic" (1024×500). Rendered to PNG by tools/store-shots.mjs. -->
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    html, body { position: static; width: 1024px; height: 500px; overflow: hidden; }
+    body {
+      background:
+        radial-gradient(90% 90% at 70% 40%, rgba(255, 255, 255, .1), transparent 60%),
+        radial-gradient(130% 120% at 40% 20%, #2f9563 0%, #0b3a24 100%);
+    }
+    .wrap { position: relative; width: 1024px; height: 500px; }
+    .text { position: absolute; left: 70px; top: 120px; width: 470px; }
+    h1 {
+      margin: 0;
+      font: 700 92px/1 ui-serif, "New York", Georgia, serif;
+      background: linear-gradient(180deg, #fff6d0, #f5c84c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .35));
+    }
+    .tag { margin: 14px 0 0; font-size: 28px; color: #fff; opacity: .85; }
+    .pub { position: absolute; left: 70px; bottom: 54px; display: flex; align-items: center; gap: 12px; color: #fff6d0; }
+    .pub img { width: 52px; }
+    .pub span { font: 700 22px/1 ui-serif, "New York", Georgia, serif; }
+    .fan { position: absolute; left: 600px; top: 70px; width: 340px; height: 360px; --cw: 132px; --ch: 185px; }
+    .fan .icard { top: 60px; transform-origin: 50% 160%; }
+    .fan .icard .face { box-shadow: 0 14px 30px rgba(0, 0, 0, .35), 0 0 0 .5px rgba(0, 0, 0, .3); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text">
+      <h1 id="title">Syvkabale</h1>
+      <p class="tag" id="tag">Den klassiske kabale</p>
+    </div>
+    <div class="fan intro-cards" id="fan"></div>
+    <div class="pub"><img src="../assets/logo.svg" alt=""><span>Trippus Games</span></div>
+  </div>
+  <script type="module">
+    import { svgSuit, RANK_LABEL } from '../js/suits.js';
+    import { isRed } from '../js/game.js';
+    if (new URLSearchParams(location.search).get('lang') === 'en') {
+      document.getElementById('title').textContent = 'Solitaire';
+      document.getElementById('tag').textContent = 'The classic card game';
+    }
+    const face = (s, r) => {
+      const art = r > 10 ? `<span class="letter">${RANK_LABEL[r]}</span>` : svgSuit(s, 'big');
+      return `<div class="face"><div class="corner"><span class="rk">${RANK_LABEL[r]}</span>${svgSuit(s, 'sm')}</div>${art}</div>`;
+    };
+    const fan = [['D', 7], ['C', 13], ['S', 1], ['H', 12], ['S', 7]];
+    document.getElementById('fan').innerHTML = fan
+      .map(([s, r], i) => `<div class="icard ${isRed(s) ? 'red' : 'black'}${r > 10 ? ' court' : ''}" style="--i:${i - 2}">${face(s, r)}</div>`)
+      .join('');
+  </script>
+</body>
+</html>

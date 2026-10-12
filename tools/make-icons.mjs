@@ -87,16 +87,26 @@ const HW = 0.2;
 const HH = 0.28;
 const R = 0.035;
 
-function shade(u, v) {
-  let col = mix(FELT_IN, FELT_OUT, smooth(0, 0.8, Math.hypot(u - 0.5, v - 0.35)));
+// Returns [r, g, b, alpha]. `scale` shrinks the cards toward the centre (for maskable /
+// adaptive icons that get cropped); `felt: false` leaves the background transparent.
+function shade(u0, v0, { scale = 1, felt = true, cards = true } = {}) {
+  let col = felt ? mix(FELT_IN, FELT_OUT, smooth(0, 0.8, Math.hypot(u0 - 0.5, v0 - 0.35))) : [0, 0, 0];
+  let alpha = felt ? 1 : 0;
+  if (!cards) return [...col, alpha];
+  const u = 0.5 + (u0 - 0.5) / scale;
+  const v = 0.5 + (v0 - 0.5) / scale;
   for (const card of [back, front]) {
-    // soft drop shadow
+    // soft drop shadow, composited "over" whatever is below
     const [sx, sy] = local(u - 0.012, v - 0.028, card);
     const sd = sdRoundRect(sx, sy, HW, HH, R);
-    col = mix(col, [0, 0, 0], 0.4 * (1 - smooth(-0.01, 0.05, sd)));
+    const s = 0.4 * (1 - smooth(-0.01, 0.05, sd));
+    const outA = s + alpha * (1 - s);
+    if (outA > 0) col = col.map((c) => (c * alpha * (1 - s)) / outA);
+    alpha = outA;
     const [x, y] = local(u, v, card);
     const d = sdRoundRect(x, y, HW, HH, R);
     if (d > 0) continue;
+    alpha = 1;
     if (card === back) {
       col = mix(BACK_IN, BACK_OUT, smooth(0, 0.35, Math.hypot(x + 0.06, y + 0.1)));
       const inner = sdRoundRect(x, y, HW - 0.028, HH - 0.028, R * 0.6);
@@ -115,37 +125,54 @@ function shade(u, v) {
       if (heart((x + 0.125) / 0.036, -(y + 0.19) / 0.036)) col = RED;
     }
   }
-  return col;
+  return [...col, alpha];
 }
 
-function render(size) {
+function render(size, opts) {
   const buf = Buffer.alloc(size * size * 4);
   const SS = 4;
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
+      // average premultiplied samples so transparent edges stay clean
       let r = 0;
       let g = 0;
       let b = 0;
+      let a = 0;
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
-          const c = shade((px + (sx + 0.5) / SS) / size, (py + (sy + 0.5) / SS) / size);
-          r += c[0];
-          g += c[1];
-          b += c[2];
+          const c = shade((px + (sx + 0.5) / SS) / size, (py + (sy + 0.5) / SS) / size, opts);
+          r += c[0] * c[3];
+          g += c[1] * c[3];
+          b += c[2] * c[3];
+          a += c[3];
         }
       }
       const i = (py * size + px) * 4;
-      buf[i] = Math.round(r / SS / SS);
-      buf[i + 1] = Math.round(g / SS / SS);
-      buf[i + 2] = Math.round(b / SS / SS);
-      buf[i + 3] = 255;
+      buf[i] = a ? Math.round(r / a) : 0;
+      buf[i + 1] = a ? Math.round(g / a) : 0;
+      buf[i + 2] = a ? Math.round(b / a) : 0;
+      buf[i + 3] = Math.round((a / SS / SS) * 255);
     }
   }
   return png(size, size, buf);
 }
 
+const resDir = fileURLToPath(new URL('../resources/', import.meta.url));
+const outputs = [
+  // web app (PWA)
+  [outDir, 'icon-180.png', 180, {}],
+  [outDir, 'icon-192.png', 192, {}],
+  [outDir, 'icon-512.png', 512, {}],
+  [outDir, 'icon-maskable-512.png', 512, { scale: 0.72 }],
+  // Android app (Capacitor's icon generator reads these). The adaptive-icon
+  // foreground must keep its content inside the middle ~60%.
+  [resDir, 'icon-only.png', 1024, {}],
+  [resDir, 'icon-foreground.png', 1024, { scale: 0.6, felt: false }],
+  [resDir, 'icon-background.png', 1024, { cards: false }],
+];
 mkdirSync(outDir, { recursive: true });
-for (const size of [180, 192, 512]) {
-  writeFileSync(outDir + `icon-${size}.png`, render(size));
-  console.log(`icons/icon-${size}.png`);
+mkdirSync(resDir, { recursive: true });
+for (const [dir, name, size, opts] of outputs) {
+  writeFileSync(dir + name, render(size, opts));
+  console.log(name);
 }
