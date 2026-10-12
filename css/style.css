@@ -247,6 +247,28 @@ button { font: inherit; color: inherit; cursor: pointer; }
     repeating-linear-gradient(-45deg, var(--backline) 0 1.5px, transparent 1.5px 6px);
 }
 
+/* the Trippus Games cup in the middle of every card back */
+.emblem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--back2);
+  box-shadow: 0 0 0 1.5px var(--backrim);
+  transform: translate(-50%, -50%);
+}
+.emblem::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  background: var(--backrim);
+  -webkit-mask: url("../assets/logo-mono.svg") center / contain no-repeat;
+  mask: url("../assets/logo-mono.svg") center / contain no-repeat;
+}
+
 /* glow outline used for hints and drop targets — works for both faces */
 .card::after, .slot::after {
   content: "";
@@ -604,7 +626,25 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .intro-rules ul { margin: 0; padding-left: 26px; display: grid; gap: 6px; }
 .intro-foot { margin: 18px 0 0; min-height: 1em; font-size: 13px; opacity: .55; }
 
+.publisher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+  text-align: left;
+}
+.pub-logo { width: 46px; height: auto; overflow: visible; }
+.publisher span { display: flex; flex-direction: column; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .65; }
+.publisher b { font: 700 17px/1.2 ui-serif, "New York", Georgia, serif; letter-spacing: .01em; text-transform: none; color: #fff6d0; opacity: 1; }
+.steam { transform-box: fill-box; transform-origin: 50% 100%; animation: steam 3.2s ease-in-out infinite; }
+@keyframes steam {
+  0% { opacity: 0; transform: translateY(10px) scale(.85); }
+  35%, 65% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-8px) scale(1.04); }
+}
+
 @media (max-height: 560px) {
+  .publisher { margin-top: 12px; }
   .intro-cards { --cw: 46px; --ch: 64px; height: 86px; margin-bottom: 6px; }
   .intro h1 { font-size: 34px; }
   .tagline { margin-bottom: 14px; }
@@ -714,5 +754,5 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) {
   .card, .card-inner { transition-duration: .12s; }
-  #autoBtn { animation: none; }
+  #autoBtn, .steam { animation: none; }
 }

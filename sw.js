@@ -1,7 +1,7 @@
 // Offline support. Online, every request goes to the network first so players
 // always get the latest version; the cached copy is only used when offline.
 // Bump VERSION when shipping changes so old caches are dropped.
-const VERSION = 'syvkabale-v6';
+const VERSION = 'syvkabale-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -16,6 +16,8 @@ const ASSETS = [
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './assets/logo.svg',
+  './assets/logo-mono.svg',
 ];
 
 self.addEventListener('install', (e) => {

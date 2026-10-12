@@ -88,7 +88,7 @@ function buildBoard() {
       const el = document.createElement('div');
       el.className = `card down ${cardClass(suit, r)}`;
       el.dataset.id = suit + r;
-      el.innerHTML = `<div class="card-inner">${faceHtml(suit, r)}<div class="back"></div></div>`;
+      el.innerHTML = `<div class="card-inner">${faceHtml(suit, r)}<div class="back"><i class="emblem"></i></div></div>`;
       board.appendChild(el);
       els.set(suit + r, el);
     }
