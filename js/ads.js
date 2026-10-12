@@ -14,9 +14,11 @@ const CONFIG = {
 };
 
 // Add ?reklame=demo to the address to preview the placeholders without waiting.
-if (new URLSearchParams(location.search).get('reklame') === 'demo') {
+const DEMO = new URLSearchParams(location.search).get('reklame') === 'demo';
+if (DEMO) {
   CONFIG.mode = 'placeholder';
   CONFIG.minGapMs = 0;
+  addEventListener('DOMContentLoaded', addDemoBar);
 }
 
 let lastShown = CONFIG.minGapMs ? Date.now() : 0; // counts as "just shown" so the first minutes are ad-free
@@ -44,6 +46,19 @@ export const Ads = {
     document.body.classList.remove('ad-banner-on');
   },
 };
+
+// Demo only: two buttons that show each ad placement straight away.
+function addDemoBar() {
+  const bar = document.createElement('div');
+  bar.className = 'ad-demo';
+  bar.innerHTML = '<b>Reklame-demo</b><button type="button" data-a="full">Fuldskærm</button><button type="button" data-a="banner">Banner</button>';
+  bar.addEventListener('click', (e) => {
+    const a = e.target.closest('button')?.dataset.a;
+    if (a === 'full' && !Ads.showing) showPlaceholder();
+    if (a === 'banner') document.body.classList.toggle('ad-banner-on');
+  });
+  document.body.appendChild(bar);
+}
 
 function showPlaceholder() {
   const layer = document.getElementById('adInterstitial');

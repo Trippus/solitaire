@@ -685,6 +685,33 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* keep the victory panel clear of the banner */
 .ad-banner-on #winModal { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 
+.ad-demo {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top) + 56px);
+  z-index: 9900;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: #1d2129;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+}
+.ad-demo button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #1d2129;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card, .card-inner { transition-duration: .12s; }
   #autoBtn { animation: none; }
