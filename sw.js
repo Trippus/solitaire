@@ -1,6 +1,7 @@
-// Offline support: serve the app shell from cache, refresh it in the background.
+// Offline support. Online, every request goes to the network first so players
+// always get the latest version; the cached copy is only used when offline.
 // Bump VERSION when shipping changes so old caches are dropped.
-const VERSION = 'syvkabale-v5';
+const VERSION = 'syvkabale-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -18,7 +19,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // 'reload' skips the browser's HTTP cache, which could otherwise hand us stale files.
+  const requests = ASSETS.map((url) => new Request(url, { cache: 'reload' }));
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(requests)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -33,14 +36,14 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
     caches.open(VERSION).then(async (cache) => {
-      const cached = await cache.match(e.request, { ignoreSearch: true });
-      const fresh = fetch(e.request)
-        .then((res) => {
-          if (res.ok) cache.put(e.request, res.clone());
-          return res;
-        })
-        .catch(() => cached);
-      return cached || fresh;
+      try {
+        // 'no-cache' revalidates with the server (a cheap 304 when nothing changed).
+        const res = await fetch(e.request.url, { cache: 'no-cache' });
+        if (res.ok) cache.put(e.request, res.clone());
+        return res;
+      } catch {
+        return (await cache.match(e.request, { ignoreSearch: true })) || Response.error();
+      }
     }),
   );
 });
