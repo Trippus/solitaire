@@ -27,7 +27,7 @@ function drawSuit(ctx, suit, x, y, size) {
 }
 
 export function drawCard(ctx, card, w, h) {
-  roundRect(ctx, 0.5, 0.5, w - 1, h - 1, w * 0.1);
+  roundRect(ctx, 0.5, 0.5, w - 1, h - 1, Math.max(0, w * 0.1));
   const g = ctx.createLinearGradient(0, 0, w, h);
   g.addColorStop(0, '#ffffff');
   g.addColorStop(1, '#efebe1');

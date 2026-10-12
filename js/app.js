@@ -100,7 +100,8 @@ function layout() {
   const H = board.clientHeight;
   const pad = Math.max(6, Math.min(W, H) * 0.02);
   let cw = (W - 2 * pad) / (7 + 6 * 0.12);
-  cw = Math.floor(Math.min(cw, (H - 2 * pad) / (1.4 * 3.3), 124));
+  // The floor guards against a zero-sized window (hidden tab, mid-rotation).
+  cw = Math.max(16, Math.floor(Math.min(cw, (H - 2 * pad) / (1.4 * 3.3), 124)));
   const ch = Math.round(cw * 1.4);
   const gap = Math.min(cw * 0.5, Math.max(cw * 0.06, (W - 2 * pad - 7 * cw) / 6));
   const x0 = (W - (7 * cw + 6 * gap)) / 2;
@@ -336,6 +337,7 @@ function newGame(seed) {
   clearTimeout(autoTimer);
   clearHints();
   closeModal('#winModal');
+  Ads.hideBanner();
   if (fx) {
     fx.stop();
     fx = null;
@@ -402,8 +404,12 @@ function win() {
         list.push({ card: c, x: r.left + p.x, y: r.top + p.y, el: els.get(c.id) });
       }
     }
-    fx = celebrate({ canvas: $('#fx'), cards: list, cw: M.cw, ch: M.ch });
     setTimeout(() => showWin({ bonus, newTime, newScore }), 1600);
+    try {
+      fx = celebrate({ canvas: $('#fx'), cards: list, cw: M.cw, ch: M.ch });
+    } catch {
+      // The victory lap is decoration; the win dialog must appear regardless.
+    }
   }, 500);
 }
 
@@ -418,6 +424,7 @@ function showWin({ bonus, newTime, newScore }) {
   if (stats.streak > 1) badges.push(`${stats.streak} sejre i træk`);
   $('#wBadges').innerHTML = badges.map((b) => `<span>${b}</span>`).join('');
   openModal('#winModal');
+  Ads.showBanner();
   busy = false;
 }
 

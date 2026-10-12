@@ -1,10 +1,11 @@
 // Ad layer. The rest of the game only talks to `Ads`, so going live later means
-// replacing the placeholder below with AdMob (via Capacitor) — nothing else changes.
+// replacing the placeholders below with AdMob (via Capacitor) — nothing else changes.
 //
 // Policy we follow (kind to players, and what AdMob recommends for games):
-//  - one full-screen ad (interstitial) at a natural break: between two games
+//  - full-screen ad (interstitial) only at a natural break: between two games
 //  - never at app launch and never in the middle of a game
-//  - at most one ad every 3 minutes; the first one at the earliest 3 minutes after launch
+//  - at most one full-screen ad every 3 minutes; the first one at the earliest 3 minutes after launch
+//  - a small banner at the bottom of the screen while the victory screen is showing
 
 const CONFIG = {
   mode: 'off', // 'off' | 'placeholder' | 'admob'
@@ -12,7 +13,13 @@ const CONFIG = {
   closeAfterSec: 5,
 };
 
-let lastShown = Date.now(); // counts as "just shown" so the first minutes are ad-free
+// Add ?reklame=demo to the address to preview the placeholders without waiting.
+if (new URLSearchParams(location.search).get('reklame') === 'demo') {
+  CONFIG.mode = 'placeholder';
+  CONFIG.minGapMs = 0;
+}
+
+let lastShown = CONFIG.minGapMs ? Date.now() : 0; // counts as "just shown" so the first minutes are ad-free
 
 export const Ads = {
   get showing() {
@@ -25,6 +32,16 @@ export const Ads = {
     if (Date.now() - lastShown < CONFIG.minGapMs) return;
     lastShown = Date.now();
     if (CONFIG.mode === 'placeholder') await showPlaceholder();
+  },
+
+  // Bottom banner, shown while the victory screen is up.
+  showBanner() {
+    if (CONFIG.mode === 'off') return;
+    if (CONFIG.mode === 'placeholder') document.body.classList.add('ad-banner-on');
+  },
+
+  hideBanner() {
+    document.body.classList.remove('ad-banner-on');
   },
 };
 
