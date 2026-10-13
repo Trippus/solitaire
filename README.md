@@ -17,6 +17,13 @@ npm start
 ```
 Open http://localhost:5180. The server also prints a LAN address, so you can try the game on your iPhone over the same Wi-Fi. Offline mode and service workers need HTTPS, so they only work once the app is hosted.
 
+## Tests
+- `npm test`: unit tests for the rules (`tests/unit/`). They take under a second
+- `npm run test:e2e`: plays the real game in headless Edge through its cards and buttons (`tests/e2e/`). They take about 40 seconds and start their own server
+- `npm run test:all`: runs both. Run this before every commit
+- `tests/MANUAL.md`: a short checklist for a real phone before a release (feel, sound, layout)
+- `bugs/`: one file per bug report, plus the fix process. Every fixed bug gets a regression test named `BUG-00X: …`
+
 ## Install on iPhone
 Host the folder on any HTTPS static host, such as GitHub Pages, Netlify or Cloudflare Pages. Open the URL in Safari, tap **Del** (Share), then **Føj til hjemmeskærm** (Add to Home Screen).
 
@@ -26,4 +33,5 @@ Host the folder on any HTTPS static host, such as GitHub Pages, Netlify or Cloud
 - `js/fx.js`: canvas card rendering and the victory animation
 - `js/audio.js`: synthesized sound effects
 - `tools/make-icons.mjs`: renders the app icons to PNG with no dependencies
+- `tools/edge.mjs`: a small headless Edge (DevTools Protocol) helper used by the end-to-end tests
 - `sw.js`: offline cache. Bump `VERSION` when you ship changes
