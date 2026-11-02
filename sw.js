@@ -1,7 +1,8 @@
 // Offline support. Online, every request goes to the network first so players
 // always get the latest version; the cached copy is only used when offline.
-// Bump VERSION when shipping changes so old caches are dropped.
-const VERSION = 'syvkabale-v7';
+// Bump VERSION when shipping changes so old caches are dropped. The music is fetched in pieces
+// (range requests), which a cache can't store, so it is left to the browser and plays when online.
+const VERSION = 'syvkabale-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -10,6 +11,7 @@ const ASSETS = [
   './js/game.js',
   './js/suits.js',
   './js/audio.js',
+  './js/music.js',
   './js/fx.js',
   './js/ads.js',
   './manifest.webmanifest',
@@ -36,7 +38,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin || e.request.headers.has('range')) return;
   e.respondWith(
     caches.open(VERSION).then(async (cache) => {
       try {

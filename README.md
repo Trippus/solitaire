@@ -6,7 +6,7 @@ Klondike solitaire ("syvkabale") as an installable iPhone web app (PWA). No App 
 - Drag and drop, or tap a card to send it to the best spot
 - Draw 1 or Draw 3, unlimited undo, hints, safe auto-play to the foundations
 - "Afslut automatisk" button once every card is face up, then the classic bouncing-cards victory lap
-- Animated dealing and 3D card flips. Sounds are synthesized with Web Audio, so there are no audio files
+- Animated dealing and 3D card flips. Sounds are synthesized with Web Audio. Calm background music (`assets/music/theme.mp3`, shared by all Trippus games, see `LICENSES.md`) loops softly and can be turned off in the menu
 - Score with time bonus, timer, statistics (win %, best time, record, streaks)
 - Table colors, card backs, left-handed layout
 - Saves the game in progress automatically and works offline through a service worker
@@ -32,6 +32,7 @@ Host the folder on any HTTPS static host, such as GitHub Pages, Netlify or Cloud
 - `js/app.js`: rendering, input, persistence and UI
 - `js/fx.js`: canvas card rendering and the victory animation
 - `js/audio.js`: synthesized sound effects
+- `js/music.js`: the looping background music
 - `tools/make-icons.mjs`: renders the app icons to PNG with no dependencies
 - `tools/edge.mjs`: a small headless Edge (DevTools Protocol) helper used by the end-to-end tests
 - `sw.js`: offline cache. Bump `VERSION` when you ship changes

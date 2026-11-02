@@ -7,6 +7,7 @@ Det, de automatiske tests ikke kan mærke. Tag 10 minutter på en rigtig telefon
 - [ ] Træk med fingeren føles glat; kortene følger fingeren uden at hakke
 - [ ] Træk en stak med flere kort, og slip den rigtigt og forkert. Den lander eller glider tilbage
 - [ ] Lyde spiller efter første tryk (iPhone kræver et tryk først), og Lyd fra virker
+- [ ] Musikken starter blødt efter første tryk, looper uden hak, stopper når appen lægges væk, og Musik fra virker
 - [ ] Sejrsrunden med hoppende kort kører jævnt
 
 ## Skærm

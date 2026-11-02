@@ -1,6 +1,7 @@
 import * as G from './game.js';
 import { RANK_LABEL, svgSuit } from './suits.js';
 import { Sound } from './audio.js';
+import { Music } from './music.js';
 import { celebrate } from './fx.js';
 import { Ads } from './ads.js';
 
@@ -22,7 +23,7 @@ const BACKS = {
   gold: { c: ['#3b3b40', '#101013'], line: 'rgba(242,201,76,.3)', rim: '#f2c94c' },
 };
 
-const settings = { drawCount: 1, sound: true, autoFound: true, leftHand: false, table: 'green', back: 'red' };
+const settings = { drawCount: 1, sound: true, music: true, autoFound: true, leftHand: false, table: 'green', back: 'red' };
 const stats = { played: 0, won: 0, streak: 0, bestStreak: 0, bestTime: 0, bestScore: 0 };
 
 let state = null;
@@ -580,6 +581,7 @@ function renderStats() {
 function syncSettingsUi() {
   document.querySelectorAll('#drawSeg button').forEach((b) => b.classList.toggle('on', +b.dataset.draw === settings.drawCount));
   $('#optSound').checked = settings.sound;
+  $('#optMusic').checked = settings.music;
   $('#optAuto').checked = settings.autoFound;
   $('#optLeft').checked = settings.leftHand;
   document.querySelectorAll('#tableSw button').forEach((b) => b.classList.toggle('on', b.dataset.v === settings.table));
@@ -599,6 +601,9 @@ function applyTheme() {
   s.setProperty('--backrim', b.rim);
   document.querySelector('meta[name=theme-color]').content = t.c[1];
   Sound.enabled = settings.sound;
+  Music.enabled = settings.music;
+  if (settings.music) Music.play();
+  else Music.pause();
 }
 
 function buildMenu() {
@@ -619,6 +624,11 @@ function buildMenu() {
   });
   $('#optSound').addEventListener('change', (e) => {
     settings.sound = e.target.checked;
+    applyTheme();
+    save();
+  });
+  $('#optMusic').addEventListener('change', (e) => {
+    settings.music = e.target.checked;
     applyTheme();
     save();
   });
@@ -762,7 +772,13 @@ function init() {
   window.addEventListener('pointermove', onMove, { passive: true });
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
-  for (const ev of ['pointerdown', 'pointerup', 'touchend', 'keydown']) document.addEventListener(ev, () => Sound.unlock(), { capture: true });
+  // Audio may only start from a tap. The music rests while the game is out of sight.
+  for (const ev of ['pointerdown', 'pointerup', 'touchend', 'keydown']) {
+    document.addEventListener(ev, () => {
+      Sound.unlock();
+      Music.play();
+    }, { capture: true });
+  }
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   document.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -806,7 +822,12 @@ function init() {
       $('#time').textContent = fmtTime(state.elapsed);
     }
   }, 1000);
-  document.addEventListener('visibilitychange', () => document.hidden && save());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      save();
+      Music.pause();
+    } else Music.play();
+  });
   window.addEventListener('pagehide', save);
 
   // Lay out the saved game (or a fresh, untouched deal) behind the intro screen.
@@ -825,6 +846,7 @@ function init() {
     get state() { return state; },
     set state(s) { state = s; history = []; render(); updateHud(); },
     G,
+    Music,
   };
 }
 

@@ -165,3 +165,18 @@ test('menu: settings stick after a reload', async () => {
   assert.equal(r.table, 'blue');
   assert.equal(r.felt, '#0a2140');
 });
+
+test('music starts after the first tap, and "Musik" off stops it and is remembered', async () => {
+  const r = await run(`
+    await deal();
+    tapCard(A.state.tableau[6].at(-1).id); await wait(300);
+    const on = A.Music.playing;
+    $('#menuBtn').click(); await wait(200);
+    $('#optMusic').click(); await wait(100);
+    const off = A.Music.playing;
+    $('#menuClose').click(); await wait(200);
+    key(' '); await wait(100);
+    return { on, off, afterTap: A.Music.playing, saved: JSON.parse(localStorage.getItem('syvkabale.v1')).settings.music };
+  `);
+  assert.deepEqual(r, { on: true, off: false, afterTap: false, saved: false });
+});
